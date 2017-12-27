@@ -88,6 +88,11 @@ namespace daemon_args
       , std::to_string(config::testnet::ZMQ_RPC_DEFAULT_PORT)
   };
 
+  const command_line::arg_descriptor<bool> arg_print_genesis_tx = {
+    "print-genesis-tx"
+      , "Prints genesis' block tx hex to insert it to config and exits"
+  };
+
 }  // namespace daemon_args
 
 #endif // DAEMON_COMMAND_LINE_ARGS_H
