@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2017, The Monero Project
-// 
+//
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -72,8 +72,8 @@
 #define ORPHANED_BLOCKS_MAX_COUNT                       100
 
 
-#define DIFFICULTY_TARGET_V2                            600  // seconds (120)
-#define DIFFICULTY_TARGET_V1                            300  // seconds - before first fork (60)
+#define DIFFICULTY_TARGET_V2                            120  // seconds
+#define DIFFICULTY_TARGET_V1                            60  // seconds - before first fork
 #define DIFFICULTY_WINDOW                               720 // blocks
 #define DIFFICULTY_LAG                                  15  // !!!
 #define DIFFICULTY_CUT                                  60  // timestamps to cut after sorting

@@ -75,6 +75,9 @@ namespace cryptonote
   template<class t_core>
   bool t_cryptonote_protocol_handler<t_core>::init(const boost::program_options::variables_map& vm)
   {
+    //Checking for node fully synchronized should be done without needing other peers
+    //Checking for node fully synchronized is needed for enabling mining
+    on_connection_synchronized();
     return true;
   }
   //------------------------------------------------------------------------------------------------------------------------

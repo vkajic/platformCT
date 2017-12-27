@@ -405,7 +405,7 @@ bool Blockchain::init(BlockchainDB* db, const bool testnet, bool offline, const 
 
 #if defined(PER_BLOCK_CHECKPOINT)
   if (!fakechain)
-    load_compiled_in_block_hashes();
+    //Disabled precompiled blocks (as the CrytoTask chain will have different blocks)
 #endif
 
   MINFO("Blockchain initialized. last block: " << m_db->height() - 1 << ", " << epee::misc_utils::get_time_interval_string(timestamp_diff) << " time ago, current difficulty: " << get_difficulty_for_next_block());
