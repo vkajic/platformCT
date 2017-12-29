@@ -1408,6 +1408,10 @@ void wallet2::process_new_blockchain_entry(const cryptonote::block& b, const cry
     process_new_transaction(get_transaction_hash(b.miner_tx), b.miner_tx, o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
     TIME_MEASURE_FINISH(miner_tx_handle_time);
 
+    for(unsigned int i=0; i < b.cryptotask_txs.size(); i++){
+      process_new_transaction(get_transaction_hash(b.cryptotask_txs[i]), b.cryptotask_txs[i], o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
+    }
+
     TIME_MEASURE_START(txs_handle_time);
     THROW_WALLET_EXCEPTION_IF(bche.txs.size() != b.tx_hashes.size(), error::wallet_internal_error, "Wrong amount of transactions for block");
     size_t idx = 0;

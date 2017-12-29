@@ -212,6 +212,10 @@ uint64_t BlockchainDB::add_block( const block& blk
 
   time1 = epee::misc_utils::get_tick_count();
   add_transaction(blk_hash, blk.miner_tx);
+  for (const transaction& tx : blk.cryptotask_txs)
+  {
+    add_transaction(blk_hash, tx);
+  }
   int tx_i = 0;
   crypto::hash tx_hash = crypto::null_hash;
   for (const transaction& tx : txs)
@@ -255,6 +259,9 @@ void BlockchainDB::pop_block(block& blk, std::vector<transaction>& txs)
     remove_transaction(h);
   }
   remove_transaction(get_transaction_hash(blk.miner_tx));
+  for (const transaction& tx : blk.cryptotask_txs) {
+    remove_transaction(get_transaction_hash(tx));
+  }
 }
 
 bool BlockchainDB::is_open() const

@@ -52,6 +52,7 @@
 #include "cryptonote_core.h"
 #include "ringct/rctSigs.h"
 #include "common/perf_timer.h"
+#include "cryptotaskcontract/cryptotask_contract.h"
 #if defined(PER_BLOCK_CHECKPOINT)
 #include "blocks/blocks.h"
 #endif
@@ -1200,6 +1201,19 @@ bool Blockchain::create_block_template(block& b, const account_public_address& m
   uint8_t hf_version = m_hardfork->get_current_version();
   size_t max_outs = hf_version >= 4 ? 1 : 11;
   bool r = construct_miner_tx(height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, hf_version);
+
+  // Build the cryptotask txs
+  std::vector<account_public_address> receivers;
+  std::vector<uint64_t> amounts;
+  CryptoTask contract;
+  contract.cryptotask_txs(b, receivers, amounts);
+  bool successfulCryptoTaskTxsBuild = true;
+  for(unsigned int i = 0; i < receivers.size() && successfulCryptoTaskTxsBuild; i++) {
+    transaction tx;
+    successfulCryptoTaskTxsBuild = construct_cryptotask_tx(height, median_size, txs_size, amounts[i], receivers[i], tx, ex_nonce, max_outs, hf_version);
+    b.cryptotask_txs.push_back(tx);
+  }
+
   CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, first chance");
   size_t cumulative_size = txs_size + get_object_blobsize(b.miner_tx);
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
@@ -1210,7 +1224,7 @@ bool Blockchain::create_block_template(block& b, const account_public_address& m
   {
     r = construct_miner_tx(height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, hf_version);
 
-    CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, second chance");
+    CHECK_AND_ASSERT_MES(r && successfulCryptoTaskTxsBuild, false, "Failed to construct miner tx, second chance");
     size_t coinbase_blob_size = get_object_blobsize(b.miner_tx);
     if (coinbase_blob_size > cumulative_size - txs_size)
     {

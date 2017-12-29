@@ -172,6 +172,66 @@ namespace cryptonote
     return true;
   }
   //---------------------------------------------------------------
+  bool construct_cryptotask_tx(size_t height, size_t median_size, size_t current_block_size, uint64_t amount, const account_public_address &receiver, transaction& tx, const blobdata& extra_nonce, size_t max_outs, uint8_t hard_fork_version) {
+    tx.vin.clear();
+    tx.vout.clear();
+    tx.extra.clear();
+
+    keypair txkey = keypair::generate();
+    add_tx_pub_key_to_extra(tx, txkey.pub);
+    if(!extra_nonce.empty())
+      if(!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
+        return false;
+
+    txin_gen in;
+    in.height = height;
+
+    std::vector<uint64_t> out_amounts;
+    decompose_amount_into_digits(amount, hard_fork_version >= 2 ? 0 : ::config::DEFAULT_DUST_THRESHOLD,
+      [&out_amounts](uint64_t a_chunk) { out_amounts.push_back(a_chunk); },
+      [&out_amounts](uint64_t a_dust) { out_amounts.push_back(a_dust); });
+
+    CHECK_AND_ASSERT_MES(1 <= max_outs, false, "max_out must be non-zero");
+    CHECK_AND_ASSERT_MES(max_outs >= out_amounts.size(), false, "max_out exceeded");
+
+    uint64_t summary_amounts = 0;
+    for (size_t no = 0; no < out_amounts.size(); no++)
+    {
+      crypto::key_derivation derivation = AUTO_VAL_INIT(derivation);;
+      crypto::public_key out_eph_public_key = AUTO_VAL_INIT(out_eph_public_key);
+      bool r = crypto::generate_key_derivation(receiver.m_view_public_key, txkey.sec, derivation);
+      CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << receiver.m_view_public_key << ", " << txkey.sec << ")");
+
+      r = crypto::derive_public_key(derivation, no, receiver.m_spend_public_key, out_eph_public_key);
+      CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", " << no << ", "<< receiver.m_spend_public_key << ")");
+
+      txout_to_key tk;
+      tk.key = out_eph_public_key;
+
+      tx_out out;
+      summary_amounts += out.amount = out_amounts[no];
+      out.target = tk;
+      tx.vout.push_back(out);
+    }
+
+    CHECK_AND_ASSERT_MES(summary_amounts == amount, false, "Failed to construct miner tx, summary_amounts = " << summary_amounts << " not equal amount = " << amount);
+
+    if (hard_fork_version >= 4)
+      tx.version = 2;
+    else
+      tx.version = 1;
+
+    //lock
+    tx.unlock_time = height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW;
+    tx.vin.push_back(in);
+
+    tx.invalidate_hashes();
+
+    //LOG_PRINT("MINER_TX generated ok, block_reward=" << print_money(block_reward) << "("  << print_money(block_reward - fee) << "+" << print_money(fee)
+    //  << "), current_block_size=" << current_block_size << ", tx_id=" << get_transaction_hash(tx), LOG_LEVEL_2);
+    return true;
+  }
+  //---------------------------------------------------------------
   crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const account_keys &sender_keys)
   {
     if (destinations.empty())

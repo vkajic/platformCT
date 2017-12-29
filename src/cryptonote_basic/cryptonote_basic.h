@@ -378,6 +378,8 @@ namespace cryptonote
     void set_hash_valid(bool v) const { hash_valid.store(v,std::memory_order_release); }
 
     transaction miner_tx;
+    // Includes all the payments that the CryptoTask contract has to make due to the txs on the block
+    std::vector<transaction> cryptotask_txs;
     std::vector<crypto::hash> tx_hashes;
 
     // hash cash
@@ -389,6 +391,7 @@ namespace cryptonote
 
       FIELDS(*static_cast<block_header *>(this))
       FIELD(miner_tx)
+      FIELD(cryptotask_txs)
       FIELD(tx_hashes)
     END_SERIALIZE()
   };
