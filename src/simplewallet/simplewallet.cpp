@@ -106,6 +106,13 @@ enum TransferType {
   TransferOriginal,
   TransferNew,
   TransferLocked,
+  //---------------------------------------------------------------
+  // begin cryptotask
+  //---------------------------------------------------------------
+  CTPostTask
+  //---------------------------------------------------------------
+  // end cryptotask
+  //---------------------------------------------------------------
 };
 
 namespace
@@ -1772,6 +1779,17 @@ simple_wallet::simple_wallet()
                            boost::bind(&simple_wallet::help, this, _1),
                            tr("help [<command>]"),
                            tr("Show the help section or the documentation about a <command>."));
+
+  //---------------------------------------------------------------
+  // begin cryptotask
+  //---------------------------------------------------------------
+  m_cmd_binder.set_handler("ct_post_task",
+                           boost::bind(&simple_wallet::ct_post_task, this, _1),
+                           tr("ct_post_task <amount> <title>"),
+                           tr("Post task with given amount and title."));
+  //---------------------------------------------------------------
+  // end cryptotask
+  //---------------------------------------------------------------
 }
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::set_variable(const std::vector<std::string> &args)
@@ -3489,6 +3507,28 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 
   std::vector<std::string> local_args = args_;
 
+  //--------------------------------------------------------------------------------------------------
+  // begin cryptotask
+  //--------------------------------------------------------------------------------------------------
+  std::string title;
+  std::string description;
+  std::string deadline;
+
+  switch (transfer_type)
+    {
+    case CTPostTask:
+      deadline = local_args.back();
+      local_args.pop_back();
+      description = local_args.back();
+      local_args.pop_back();
+      title = local_args.back();
+      local_args.pop_back();
+      break;
+    }
+  //--------------------------------------------------------------------------------------------------
+  // end cryptotask
+  //--------------------------------------------------------------------------------------------------
+
   std::set<uint32_t> subaddr_indices;
   if (local_args.size() > 0 && local_args[0].substr(0, 6) == "index=")
   {
@@ -3648,6 +3688,27 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
      }
   }
 
+  //----------------------------------------------------------------------------------------------------
+  // begin cryptotask
+  //----------------------------------------------------------------------------------------------------
+
+  switch (transfer_type)
+    {
+    case CTPostTask:
+      // add post task
+      auto r = add_ct_post_task_to_tx_extra(extra, title, description, deadline);
+      if(!r) {
+        fail_msg_writer() << "Error adding ct_post_task";
+        return true;
+      }
+      message_writer() << "POST_TASK added";
+      break;
+    }
+  //----------------------------------------------------------------------------------------------------
+  // end cryptotask
+  //----------------------------------------------------------------------------------------------------
+  
+
   try
   {
     // figure out what tx will be necessary
@@ -3669,6 +3730,17 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
       case TransferNew:
         ptx_vector = m_wallet->create_transactions_2(dsts, fake_outs_count, 0 /* unlock_time */, priority, extra, m_current_subaddress_account, subaddr_indices, m_trusted_daemon);
       break;
+      //---------------------------------------------------------------
+      // begin cryptotask
+      //---------------------------------------------------------------
+      case CTPostTask:
+        // Cryptotask - same as TransferNew
+        ptx_vector = m_wallet->create_transactions_2(dsts, fake_outs_count, 0 /* unlock_time */, priority, extra, m_current_subaddress_account, subaddr_indices, m_trusted_daemon);
+      break;
+      //---------------------------------------------------------------
+      // end cryptotask
+      //---------------------------------------------------------------
+      
       default:
         LOG_ERROR("Unknown transfer method, using original");
         /* FALLTHRU */
@@ -6409,6 +6481,76 @@ void simple_wallet::commit_or_save(std::vector<tools::wallet2::pending_tx>& ptx_
     ptx_vector.pop_back();
   }
 }
+
+//----------------------------------------------------------------------------------------------------
+// begin cryptotask
+//----------------------------------------------------------------------------------------------------
+bool simple_wallet::ct_post_task(const std::vector<std::string> &args_)
+{
+  std::vector<std::string> local_args = args_;
+  if(local_args.empty() || local_args.size() > 9)
+  {
+     fail_msg_writer() << tr("usage: ct_post_task [index=<N1>[,<N2>,...]] [<priority>] [<ring_size>] <title> <description> <deadline> <address> <amount> [payment_id]");
+     return true;
+  }
+
+  // Hardcode Cryptotask's post task address
+  // const std::string address_str = "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A";
+  std::string address_str;
+  std::string amount_str;
+  //std::string payment_id_str;
+  std::string title_str;
+  std::string description_str;
+  std::string deadline_str;
+  
+  // get payment id and pop
+  // crypto::hash payment_id;
+  // crypto::hash8 payment_id8;
+  // if (tools::wallet2::parse_long_payment_id (local_args.back(), payment_id ) ||
+  //     tools::wallet2::parse_short_payment_id(local_args.back(), payment_id8))
+  // {
+  //   payment_id_str = local_args.back();
+  //   local_args.pop_back();
+  // }
+  
+  // get amount and pop
+  amount_str = local_args.back();
+  local_args.pop_back();
+
+  // get address and pop
+  address_str = local_args.back();
+  local_args.pop_back();
+
+  // get deadline and pop
+  deadline_str = local_args.back();
+  local_args.pop_back();
+
+  // get description and pop
+  description_str = local_args.back();
+  local_args.pop_back();
+
+  // get title and pop
+  title_str = local_args.back();
+  local_args.pop_back();
+  
+  // push back address, amount, payment id
+  local_args.push_back(address_str);
+  local_args.push_back(amount_str);
+  // if (!payment_id_str.empty())
+  //   local_args.push_back(payment_id_str);
+
+  local_args.push_back(title_str);
+  local_args.push_back(description_str);
+  local_args.push_back(deadline_str);
+  
+  message_writer() << "POST_TASK :: " << address_str << ", " << amount_str << ", "<< title_str << ", " << description_str << ", " << deadline_str;
+  transfer_main(CTPostTask, local_args);
+  return true;
+}
+//----------------------------------------------------------------------------------------------------
+// end cryptotask
+//----------------------------------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

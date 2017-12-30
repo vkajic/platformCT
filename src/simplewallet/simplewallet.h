@@ -208,6 +208,14 @@ namespace cryptonote
     std::string get_prompt() const;
     bool print_seed(bool encrypted);
 
+    //---------------------------------------------------------------
+    // begin cryptotask
+    //---------------------------------------------------------------
+    bool ct_post_task(const std::vector<std::string> &args);
+    //---------------------------------------------------------------
+    // end cryptotask
+    //---------------------------------------------------------------
+
     /*!
      * \brief Prints the seed with a nice message
      * \param seed seed to print
