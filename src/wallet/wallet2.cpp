@@ -1395,8 +1395,10 @@ void wallet2::process_outgoing(const crypto::hash &txid, const cryptonote::trans
 void wallet2::process_new_blockchain_entry(const cryptonote::block& b, const cryptonote::block_complete_entry& bche, const crypto::hash& bl_id, uint64_t height, const cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices &o_indices)
 {
   size_t txidx = 0;
-  THROW_WALLET_EXCEPTION_IF(bche.txs.size() + 1 != o_indices.indices.size(), error::wallet_internal_error,
+  THROW_WALLET_EXCEPTION_IF(b.cryptotask_txs.size() + bche.txs.size() + 1 != o_indices.indices.size(),
+      error::wallet_internal_error,
       "block transactions=" + std::to_string(bche.txs.size()) +
+      "and cryptotask_txs=" + std::to_string(b.cryptotask_txs.size()) +
       " not match with daemon response size=" + std::to_string(o_indices.indices.size()));
 
   //handle transactions from new block
@@ -1408,8 +1410,9 @@ void wallet2::process_new_blockchain_entry(const cryptonote::block& b, const cry
     process_new_transaction(get_transaction_hash(b.miner_tx), b.miner_tx, o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
     TIME_MEASURE_FINISH(miner_tx_handle_time);
 
-    for(unsigned int i=0; i < b.cryptotask_txs.size(); i++){
-      process_new_transaction(get_transaction_hash(b.cryptotask_txs[i]), b.cryptotask_txs[i], o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
+    // Process the cryptotask_txs
+    for(const transaction& ct_tx : b.cryptotask_txs){
+      process_new_transaction(get_transaction_hash(ct_tx), ct_tx, o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
     }
 
     TIME_MEASURE_START(txs_handle_time);

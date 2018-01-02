@@ -172,7 +172,7 @@ namespace cryptonote
     return true;
   }
   //---------------------------------------------------------------
-  bool construct_cryptotask_tx(size_t height, size_t median_size, size_t current_block_size, uint64_t amount, const account_public_address &receiver, transaction& tx, const blobdata& extra_nonce, size_t max_outs, uint8_t hard_fork_version) {
+  bool construct_cryptotask_tx(size_t height, uint64_t amount, const account_public_address &receiver, transaction& tx, const blobdata& extra_nonce, size_t max_outs, uint8_t hard_fork_version) {
     tx.vin.clear();
     tx.vout.clear();
     tx.extra.clear();
@@ -228,7 +228,7 @@ namespace cryptonote
     tx.invalidate_hashes();
 
     //LOG_PRINT("MINER_TX generated ok, block_reward=" << print_money(block_reward) << "("  << print_money(block_reward - fee) << "+" << print_money(fee)
-    //  << "), current_block_size=" << current_block_size << ", tx_id=" << get_transaction_hash(tx), LOG_LEVEL_2);
+    //  << "), tx_id=" << get_transaction_hash(tx), LOG_LEVEL_2);
     return true;
   }
   //---------------------------------------------------------------

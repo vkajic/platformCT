@@ -208,6 +208,18 @@ namespace cryptonote
         res.status = "Failed";
         return false;
       }
+
+      // Add outputs indexes for cryptotask_txs
+      bool r_cttx = true;
+      for (const transaction& ct_tx : b.cryptotask_txs) {
+        res.output_indices.back().indices.push_back(COMMAND_RPC_GET_BLOCKS_FAST::tx_output_indices());
+        r_cttx = r_cttx && m_core.get_tx_outputs_gindexs(get_transaction_hash(ct_tx), res.output_indices.back().indices.back().indices);
+      }
+      if (!r_cttx){
+        res.status = "Failed";
+        return false;
+      }
+
       size_t txidx = 0;
       ntxes += bd.second.size();
       for (std::list<cryptonote::blobdata>::iterator i = bd.second.begin(); i != bd.second.end(); ++i)
