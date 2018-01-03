@@ -290,6 +290,8 @@ public:
    */
   std::map<uint64_t, std::tuple<uint64_t, uint64_t, uint64_t>> get_output_histogram(const std::vector<uint64_t> &amounts, bool unlocked, uint64_t recent_cutoff) const;
 
+  virtual std::vector<transaction> ct_list_all_post_tasks() const;
+
 private:
   void do_resize(uint64_t size_increase=0);
 

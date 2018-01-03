@@ -3762,4 +3762,66 @@ void BlockchainLMDB::migrate(const uint32_t oldversion)
   }
 }
 
+//-----------------------------------------------------------------------------
+// begin cryptotask
+//-----------------------------------------------------------------------------
+std::vector<transaction> BlockchainLMDB::ct_list_all_post_tasks() const
+{
+  LOG_PRINT_L3("BlockchainLMDB::" << __func__);
+  check_open();
+
+  TXN_PREFIX_RDONLY();
+  RCURSOR(txs);
+  RCURSOR(tx_indices);
+
+  MDB_val k;
+  MDB_val v;
+
+  std::vector<transaction> ret_txs;
+
+  MDB_cursor_op op = MDB_FIRST;
+  while (1)
+  {
+    int ret = mdb_cursor_get(m_cur_tx_indices, &k, &v, op);
+    op = MDB_NEXT;
+    if (ret == MDB_NOTFOUND)
+      break;
+    if (ret)
+      throw0(DB_ERROR(lmdb_error("Failed to enumerate transactions: ", ret).c_str()));
+
+    txindex *ti = (txindex *)v.mv_data;
+    k.mv_data = (void *)&ti->data.tx_id;
+    k.mv_size = sizeof(ti->data.tx_id);
+    ret = mdb_cursor_get(m_cur_txs, &k, &v, MDB_SET);
+    if (ret == MDB_NOTFOUND)
+      break;
+    if (ret)
+      throw0(DB_ERROR(lmdb_error("Failed to enumerate transactions: ", ret).c_str()));
+    blobdata bd;
+    bd.assign(reinterpret_cast<char*>(v.mv_data), v.mv_size);
+    transaction tx;
+    if (!parse_and_validate_tx_from_blob(bd, tx))
+      throw0(DB_ERROR("Failed to parse tx from blob retrieved from the db"));
+
+    std::vector<tx_extra_field> tx_extra_fields;
+    if (parse_tx_extra(tx.extra, tx_extra_fields))
+    {
+      tx_extra_ct_post_task ct_post_task;
+      if (find_tx_extra_field_by_type(tx_extra_fields, ct_post_task))
+      {
+        ret_txs.push_back(tx);
+        LOG_PRINT_L0("Found ct_post_task: " << ct_post_task.title);
+      }
+    }
+  }
+
+  TXN_POSTFIX_RDONLY();
+
+  return ret_txs;
+}
+
+//-----------------------------------------------------------------------------
+// end cryptotask
+//-----------------------------------------------------------------------------
+
 }  // namespace cryptonote
