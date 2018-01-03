@@ -1205,7 +1205,7 @@ bool Blockchain::create_block_template(block& b, const account_public_address& m
   // Build the cryptotask txs, producing new money as corresponds by the cryptotask contract txs in the block
   std::vector<account_public_address> receivers;
   std::vector<uint64_t> amounts;
-  cryptotask::CryptoTask contract; //FIXME: Construct somewhere else?
+  cryptotask::CryptoTask contract(m_tx_pool); //FIXME: Construct somewhere else?
   contract.cryptotask_txs(b, receivers, amounts);
   bool successfulCryptoTaskTxsBuild = true;
   for(unsigned int i = 0; i < receivers.size() && successfulCryptoTaskTxsBuild; i++) {

@@ -21,23 +21,38 @@ namespace cryptotask
     class CryptoTask {
 
       private:
-        // Hardcoded receiver of the only cryptotask_tx of every block created
+        // MOCK: Hardcoded receiver of the only cryptotask_tx of every block created
         cryptonote::account_public_address receiver;
         uint64_t amount;
 
+        // Hardcoded smart contract address
+        cryptonote::account_public_address cryptotask;
+
+        // Reference to the pool of txs
+        cryptonote::tx_memory_pool* tx_pool;
+
       public:
         //Mock contractor that sets the receiver of every cryptotask_tx created to a hardcoded address
-        CryptoTask() {
+        CryptoTask(cryptonote::tx_memory_pool &pool) {
+
+          /* Set contract address */
           //Mnemonic used to obtain funds:
           //    "does cube aspire peeled wiggle hawk unquoted august opposite lesson framed gauze vastness getting speedy degrees academy jigsaw luxury light kidneys kisses using wobbly opposite"
-          std::string const RECEIVER_SPEND_PUBLIC_KEY = "450c916014367c5d5220da983b9a725e51883e37a970d2dbcbceaf2bdfaf690b";
-          std::string const RECEIVER_VIEW_PUBLIC_KEY = "7680b90d0b63b97dc81379e6ca78c5e9f0184720528af5658d11a376bf8ac5d9";
+          std::string const CONTRACT_SPEND_PUBLIC_KEY = "450c916014367c5d5220da983b9a725e51883e37a970d2dbcbceaf2bdfaf690b";
+          std::string const CONTRACT_VIEW_PUBLIC_KEY = "7680b90d0b63b97dc81379e6ca78c5e9f0184720528af5658d11a376bf8ac5d9";
 
-          //Hardcoded values for tests
-          receiver.m_spend_public_key = decode_hex_to_pubkey(RECEIVER_SPEND_PUBLIC_KEY);
-          receiver.m_view_public_key = decode_hex_to_pubkey(RECEIVER_VIEW_PUBLIC_KEY);
+          cryptotask.m_spend_public_key = decode_hex_to_pubkey(CONTRACT_SPEND_PUBLIC_KEY);
+          cryptotask.m_view_public_key = decode_hex_to_pubkey(CONTRACT_VIEW_PUBLIC_KEY);
+
+          /* Set receiver address of the transfers */
+          // Mock: Receiver of transfers is the contract itself
+          receiver.m_spend_public_key = decode_hex_to_pubkey(CONTRACT_SPEND_PUBLIC_KEY);
+          receiver.m_view_public_key = decode_hex_to_pubkey(CONTRACT_VIEW_PUBLIC_KEY);
 
           amount = 1000 * 1000000000000;
+
+          /* Set tx_pool */
+          tx_pool = &pool;
         }
 
         // Validates the cryptotask_txs field of a block, so that no tx generated was invalid
@@ -49,8 +64,28 @@ namespace cryptotask
         // Scans the block txs, and returns the receivers (an amounts) of generated money with cryptotask_txs
         // FIXME: Currently returns only one hardcoded receiver and amount
         void cryptotask_txs(cryptonote::block &b, std::vector<cryptonote::account_public_address> &receivers, std::vector<uint64_t> &amounts) {
+          hardcoded_cryptotask_txs(b, receivers, amounts);
+        }
+
+        void hardcoded_cryptotask_txs(cryptonote::block &b, std::vector<cryptonote::account_public_address> &receivers, std::vector<uint64_t> &amounts) {
           receivers.push_back(receiver);
           amounts.push_back(amount);
+        }
+
+        bool receiver_cryptotask_txs(cryptonote::block &b, std::vector<cryptonote::account_public_address> &receivers, std::vector<uint64_t> &amounts) {
+          for(const crypto::hash& tx_hash : b.tx_hashes) {
+            // Fetch tx from pool
+            cryptonote::transaction tx;
+            cryptonote::blobdata txblob;
+            CHECK_AND_ASSERT_THROW_MES(tx_pool->get_transaction(tx_hash, txblob), "Transaction not found in pool"); // FIXME: How is this handled?
+            if (!parse_and_validate_tx_from_blob(txblob, tx)) {
+              MERROR("Failed to parse tx from txpool");
+              return false;
+            }
+
+            // Check if the target is the hardcoded smart contract
+            // check_acc_out_precomp(tx.vout[0], derivation, additional_derivations, 0, tx_scan_info[0]);
+          }
         }
 
     };
