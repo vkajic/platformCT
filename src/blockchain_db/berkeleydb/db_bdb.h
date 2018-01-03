@@ -350,6 +350,14 @@ public:
    */
   std::map<uint64_t, uint64_t> get_output_histogram(const std::vector<uint64_t> &amounts) const;
 
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  virtual std::vector<transaction> ct_get_all_post_tasks() const;
+  //-----------------------------------------------------------------------------
+  // end cryptotask
+  //-----------------------------------------------------------------------------
+
 private:
   virtual void add_block( const block& blk
                 , const size_t& block_size

@@ -1784,6 +1784,40 @@ namespace cryptonote
   }
   //------------------------------------------------------------------------------------------------------------------------------
 
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  bool core_rpc_server::on_get_ct_post_tasks(const COMMAND_RPC_GET_CT_POST_TASKS::request& req, COMMAND_RPC_GET_CT_POST_TASKS::response& res, epee::json_rpc::error& error_resp)
+  {
+    PERF_TIMER(on_get_ct_post_tasks);
+
+    std::vector<transaction> txs = m_core.get_blockchain_storage().get_db().ct_get_all_post_tasks();
+    
+    LOG_PRINT_L0("Found " << txs.size() << " ct post tasks transactions on the blockchain");
+
+    for(auto& tx: txs)
+    {
+      res.tasks.push_back(COMMAND_RPC_GET_CT_POST_TASKS::entry());
+      COMMAND_RPC_GET_CT_POST_TASKS::entry &e = res.tasks.back();
+
+      e.hash = epee::string_tools::pod_to_hex(get_transaction_hash(tx));
+
+      std::vector<tx_extra_field> tx_extra_fields;
+      if (parse_tx_extra(tx.extra, tx_extra_fields))
+        {
+          tx_extra_ct_post_task ct_post_task;
+          if (find_tx_extra_field_by_type(tx_extra_fields, ct_post_task))
+            {
+              e.title = ct_post_task.title;
+            }
+        }
+    }
+
+    res.status = CORE_RPC_STATUS_OK;
+    return true;
+  }
+  //------------------------------------------------------------------------------------------------------------------------------
+
   const command_line::arg_descriptor<std::string> core_rpc_server::arg_rpc_bind_port = {
       "rpc-bind-port"
     , "Port for RPC server"

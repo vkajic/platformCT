@@ -2342,3 +2342,14 @@ void BlockchainBDB::fixup()
 }
 
 }  // namespace cryptonote
+
+//-----------------------------------------------------------------------------
+// begin cryptotask
+//-----------------------------------------------------------------------------
+std::vector<transaction> BlockchainBDB::ct_get_all_post_tasks() const
+{
+  LOG_PRINT_L3("BlockchainBDB::" << __func__);
+  LOG_PRINT_L0("Not implemented");
+  std::vector<transaction> ret_txs;
+  return ret_txs;
+}

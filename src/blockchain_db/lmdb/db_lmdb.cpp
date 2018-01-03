@@ -3765,7 +3765,7 @@ void BlockchainLMDB::migrate(const uint32_t oldversion)
 //-----------------------------------------------------------------------------
 // begin cryptotask
 //-----------------------------------------------------------------------------
-std::vector<transaction> BlockchainLMDB::ct_list_all_post_tasks() const
+std::vector<transaction> BlockchainLMDB::ct_get_all_post_tasks() const
 {
   LOG_PRINT_L3("BlockchainLMDB::" << __func__);
   check_open();
@@ -3810,7 +3810,6 @@ std::vector<transaction> BlockchainLMDB::ct_list_all_post_tasks() const
       if (find_tx_extra_field_by_type(tx_extra_fields, ct_post_task))
       {
         ret_txs.push_back(tx);
-        LOG_PRINT_L0("Found ct_post_task: " << ct_post_task.title);
       }
     }
   }

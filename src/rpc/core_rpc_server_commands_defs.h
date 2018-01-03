@@ -2113,4 +2113,43 @@ namespace cryptonote
       END_KV_SERIALIZE_MAP()
     };
   };
+
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  struct COMMAND_RPC_GET_CT_POST_TASKS
+  {
+
+    struct request
+    {
+
+      BEGIN_KV_SERIALIZE_MAP()
+      END_KV_SERIALIZE_MAP()
+    };
+      
+    struct entry
+    {
+      std::string hash;
+      std::string title;
+
+      BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(hash)
+      KV_SERIALIZE(title)
+      END_KV_SERIALIZE_MAP()
+    };
+      
+      
+    struct response
+    {
+      std::vector<entry> tasks;
+      std::string status;
+
+      BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(tasks)
+      END_KV_SERIALIZE_MAP()
+    };
+  };
+  //-----------------------------------------------------------------------------
+  // end cryptotask
+  //-----------------------------------------------------------------------------
 }

@@ -1511,6 +1511,14 @@ public:
    */
   void set_auto_remove_logs(bool auto_remove) { m_auto_remove_logs = auto_remove; }
 
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  virtual std::vector<transaction> ct_get_all_post_tasks() const = 0;
+  //-----------------------------------------------------------------------------
+  // end cryptotask
+  //-----------------------------------------------------------------------------
+
   bool m_open;  //!< Whether or not the BlockchainDB is open/ready for use
   mutable epee::critical_section m_synchronization_lock;  //!< A lock, currently for when BlockchainLMDB needs to resize the backing db file
 

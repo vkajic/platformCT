@@ -123,6 +123,14 @@ public:
   virtual cryptonote::blobdata get_txpool_tx_blob(const crypto::hash& txid) const { return ""; }
   virtual bool for_all_txpool_txes(std::function<bool(const crypto::hash&, const txpool_tx_meta_t&, const cryptonote::blobdata*)>, bool include_blob = false, bool include_unrelayed_txes = false) const { return false; }
 
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  virtual std::vector<transaction> ct_get_all_post_tasks() const { return std::vector<transaction>(); }
+  //-----------------------------------------------------------------------------
+  // end cryptotask
+  //-----------------------------------------------------------------------------
+
   virtual void add_block( const block& blk
                         , const size_t& block_size
                         , const difficulty_type& cumulative_difficulty
