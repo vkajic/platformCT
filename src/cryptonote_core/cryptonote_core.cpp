@@ -1000,6 +1000,10 @@ namespace cryptonote
       return true;
     }
 
+    // cryptotask additional check
+    // if this is apply for task for tx=txid
+    // then search for apply for task txs with the same id
+
     uint8_t version = m_blockchain_storage.get_current_hard_fork_version();
     return m_mempool.add_tx(tx, tx_hash, blob_size, tvc, keeped_by_block, relayed, do_not_relay, version);
   }

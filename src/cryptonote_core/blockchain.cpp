@@ -3396,6 +3396,21 @@ leave:
       goto leave;
     }
 
+    //-----------------------------------------------------------------------------
+    // begin cryptotask
+    //-----------------------------------------------------------------------------
+
+    // disable addition of more than single "apply for task" to blockchain
+    // if (!check_if_ct_apply_for_task_already_mined(tx)) {
+    //   MERROR_VER("Block with id: " << id  << " has at least one 'ct apply for task' tx for task that was already applied to before: " << tx_id);
+    //   bvc.m_verifivation_failed = true;
+    //   //return_tx_to_pool(txs);
+    //   goto leave;
+    // }
+    //-----------------------------------------------------------------------------
+    // end cryptotask
+    //-----------------------------------------------------------------------------
+
     TIME_MEASURE_FINISH(bb);
     t_pool += bb;
     // add the transaction to the temp list of transactions, so we can either

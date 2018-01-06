@@ -2117,6 +2117,7 @@ namespace cryptonote
   //-----------------------------------------------------------------------------
   // begin cryptotask
   //-----------------------------------------------------------------------------
+  
   struct COMMAND_RPC_GET_CT_POST_TASKS
   {
 
@@ -2131,10 +2132,14 @@ namespace cryptonote
     {
       std::string hash;
       std::string title;
+      std::string description;
+      std::string deadline;
 
       BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(hash)
       KV_SERIALIZE(title)
+      KV_SERIALIZE(description)
+      KV_SERIALIZE(deadline)
       END_KV_SERIALIZE_MAP()
     };
       
@@ -2146,6 +2151,37 @@ namespace cryptonote
 
       BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(tasks)
+      END_KV_SERIALIZE_MAP()
+    };
+  };
+
+  struct COMMAND_RPC_GET_CT_APPLY_FOR_TASKS
+  {
+
+    struct request
+    {
+
+      BEGIN_KV_SERIALIZE_MAP()
+      END_KV_SERIALIZE_MAP()
+    };
+      
+    struct entry
+    {
+      std::string task_txid;
+
+      BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(task_txid)
+      END_KV_SERIALIZE_MAP()
+    };
+      
+      
+    struct response
+    {
+      std::vector<entry> entries;
+      std::string status;
+
+      BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE(entries)
       END_KV_SERIALIZE_MAP()
     };
   };

@@ -354,6 +354,7 @@ public:
   // begin cryptotask
   //-----------------------------------------------------------------------------
   virtual std::vector<transaction> ct_get_all_post_tasks() const;
+  virtual std::vector<transaction> ct_get_all_apply_for_tasks() const;
   //-----------------------------------------------------------------------------
   // end cryptotask
   //-----------------------------------------------------------------------------

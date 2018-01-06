@@ -1784,9 +1784,9 @@ namespace cryptonote
   }
   //------------------------------------------------------------------------------------------------------------------------------
 
-  //-----------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------
   // begin cryptotask
-  //-----------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------
   bool core_rpc_server::on_get_ct_post_tasks(const COMMAND_RPC_GET_CT_POST_TASKS::request& req, COMMAND_RPC_GET_CT_POST_TASKS::response& res, epee::json_rpc::error& error_resp)
   {
     PERF_TIMER(on_get_ct_post_tasks);
@@ -1809,6 +1809,8 @@ namespace cryptonote
           if (find_tx_extra_field_by_type(tx_extra_fields, ct_post_task))
             {
               e.title = ct_post_task.title;
+              e.description = ct_post_task.description;
+              e.deadline = ct_post_task.deadline;
             }
         }
     }
@@ -1816,6 +1818,38 @@ namespace cryptonote
     res.status = CORE_RPC_STATUS_OK;
     return true;
   }
+  //------------------------------------------------------------------------------------------------------------------------------
+  bool core_rpc_server::on_get_ct_apply_for_tasks(const COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::request& req, COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::response& res, epee::json_rpc::error& error_resp)
+  {
+    PERF_TIMER(on_get_ct_post_tasks);
+
+    std::vector<transaction> txs = m_core.get_blockchain_storage().get_db().ct_get_all_apply_for_tasks();
+    
+    LOG_PRINT_L0("Found " << txs.size() << " ct apply for tasks transactions on the blockchain");
+
+    for(auto& tx: txs)
+    {
+      res.entries.push_back(COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::entry());
+      COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::entry &e = res.entries.back();
+
+      std::vector<tx_extra_field> tx_extra_fields;
+      if (parse_tx_extra(tx.extra, tx_extra_fields))
+        {
+          tx_extra_ct_apply_for_task ct_aft;
+          if (find_tx_extra_field_by_type(tx_extra_fields, ct_aft))
+            {
+              e.task_txid = epee::string_tools::pod_to_hex(ct_aft.task_txid);
+            }
+        }
+    }
+
+    res.status = CORE_RPC_STATUS_OK;
+    return true;
+  }
+  //------------------------------------------------------------------------------------------------------------------------------
+  // end cryptotask
+  //------------------------------------------------------------------------------------------------------------------------------
+  
   //------------------------------------------------------------------------------------------------------------------------------
 
   const command_line::arg_descriptor<std::string> core_rpc_server::arg_rpc_bind_port = {

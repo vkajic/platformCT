@@ -294,6 +294,7 @@ public:
   // begin cryptotask
   //-----------------------------------------------------------------------------
   virtual std::vector<transaction> ct_get_all_post_tasks() const;
+  virtual std::vector<transaction> ct_get_all_apply_for_tasks() const;
   //-----------------------------------------------------------------------------
   // end cryptotask
   //-----------------------------------------------------------------------------
@@ -338,6 +339,14 @@ private:
   virtual void remove_spent_key(const crypto::key_image& k_image);
 
   uint64_t num_outputs() const;
+
+  //-----------------------------------------------------------------------------
+  // begin cryptotask
+  //-----------------------------------------------------------------------------
+  virtual std::vector<transaction> ct_get_txs(int ct_extra_field_type) const;
+  //-----------------------------------------------------------------------------
+  // end cryptotask
+  //-----------------------------------------------------------------------------
 
   // Hard fork
   virtual void set_hard_fork_version(uint64_t height, uint8_t version);

@@ -137,6 +137,7 @@ namespace cryptonote
         // begin cryptotask
         //-----------------------------------------------------------------------------
         MAP_JON_RPC_WE("get_ct_post_tasks",      on_get_ct_post_tasks,          COMMAND_RPC_GET_CT_POST_TASKS)
+        MAP_JON_RPC_WE("get_ct_apply_for_tasks", on_get_ct_apply_for_tasks,     COMMAND_RPC_GET_CT_APPLY_FOR_TASKS)
         //-----------------------------------------------------------------------------
         // end cryptotask
         //-----------------------------------------------------------------------------
@@ -206,6 +207,7 @@ namespace cryptonote
     // begin cryptotask
     //-----------------------------------------------------------------------------
     bool on_get_ct_post_tasks(const COMMAND_RPC_GET_CT_POST_TASKS::request& req, COMMAND_RPC_GET_CT_POST_TASKS::response& res, epee::json_rpc::error& error_resp);
+    bool on_get_ct_apply_for_tasks(const COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::request& req, COMMAND_RPC_GET_CT_APPLY_FOR_TASKS::response& res, epee::json_rpc::error& error_resp);
     //-----------------------------------------------------------------------------
     // end cryptotask
     //-----------------------------------------------------------------------------

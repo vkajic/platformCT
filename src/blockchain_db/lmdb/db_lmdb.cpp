@@ -3765,7 +3765,8 @@ void BlockchainLMDB::migrate(const uint32_t oldversion)
 //-----------------------------------------------------------------------------
 // begin cryptotask
 //-----------------------------------------------------------------------------
-std::vector<transaction> BlockchainLMDB::ct_get_all_post_tasks() const
+
+std::vector<transaction> BlockchainLMDB::ct_get_txs(int ct_extra_field_type) const
 {
   LOG_PRINT_L3("BlockchainLMDB::" << __func__);
   check_open();
@@ -3806,17 +3807,43 @@ std::vector<transaction> BlockchainLMDB::ct_get_all_post_tasks() const
     std::vector<tx_extra_field> tx_extra_fields;
     if (parse_tx_extra(tx.extra, tx_extra_fields))
     {
-      tx_extra_ct_post_task ct_post_task;
-      if (find_tx_extra_field_by_type(tx_extra_fields, ct_post_task))
-      {
-        ret_txs.push_back(tx);
-      }
+      switch (ct_extra_field_type)
+        {
+        case 0:
+          {
+            tx_extra_ct_post_task ct_pt;
+            if (find_tx_extra_field_by_type(tx_extra_fields, ct_pt))
+              {
+                ret_txs.push_back(tx);
+              }
+            break;
+          }
+        case 1:
+          {
+            tx_extra_ct_apply_for_task ct_aft;
+            if (find_tx_extra_field_by_type(tx_extra_fields, ct_aft))
+              {
+                ret_txs.push_back(tx);
+              }
+            break;
+          }
+        }
     }
   }
 
   TXN_POSTFIX_RDONLY();
 
   return ret_txs;
+}
+
+std::vector<transaction> BlockchainLMDB::ct_get_all_post_tasks() const
+{
+  return ct_get_txs(0);
+}
+
+std::vector<transaction> BlockchainLMDB::ct_get_all_apply_for_tasks() const
+{
+  return ct_get_txs(1);
 }
 
 //-----------------------------------------------------------------------------

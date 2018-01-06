@@ -48,6 +48,7 @@
 // begin cryptotask
 //---------------------------------------------------------------
 #define TX_EXTRA_CT_POST_TASK               0x10
+#define TX_EXTRA_CT_APPLY_FOR_TASK          0x11
 //---------------------------------------------------------------
 // end cryptotask
 //---------------------------------------------------------------
@@ -205,6 +206,15 @@ namespace cryptonote
     END_SERIALIZE()
   };
 
+  struct tx_extra_ct_apply_for_task
+  {
+    crypto::hash task_txid;
+
+    BEGIN_SERIALIZE()
+      FIELD(task_txid)
+    END_SERIALIZE()
+  };
+
   //---------------------------------------------------------------
   // end cryptotask
   //---------------------------------------------------------------
@@ -213,7 +223,7 @@ namespace cryptonote
   //   varint tag;
   //   varint size;
   //   varint data[];
-  typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag, tx_extra_additional_pub_keys, tx_extra_mysterious_minergate, tx_extra_ct_post_task> tx_extra_field;
+  typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag, tx_extra_additional_pub_keys, tx_extra_mysterious_minergate, tx_extra_ct_post_task, tx_extra_ct_apply_for_task> tx_extra_field;
 }
 
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_padding, TX_EXTRA_TAG_PADDING);
@@ -222,10 +232,12 @@ VARIANT_TAG(binary_archive, cryptonote::tx_extra_nonce, TX_EXTRA_NONCE);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_merge_mining_tag, TX_EXTRA_MERGE_MINING_TAG);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_additional_pub_keys, TX_EXTRA_TAG_ADDITIONAL_PUBKEYS);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_mysterious_minergate, TX_EXTRA_MYSTERIOUS_MINERGATE_TAG);
+
 //---------------------------------------------------------------
 // begin cryptotask
 //---------------------------------------------------------------
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_ct_post_task, TX_EXTRA_CT_POST_TASK);
+VARIANT_TAG(binary_archive, cryptonote::tx_extra_ct_apply_for_task, TX_EXTRA_CT_APPLY_FOR_TASK);
 //---------------------------------------------------------------
 // end cryptotask
 //---------------------------------------------------------------
